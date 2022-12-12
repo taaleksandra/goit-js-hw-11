@@ -33,37 +33,59 @@ const fetchImg = async q => {
       },
     });
 
-    console.log(response);
+    // console.log(response);
 
     const totalHits = response.data.totalHits;
     const total = response.data.total;
+
+    if (total === 0) {
+      Notiflix.Notify.init({
+        timeout: 5000,
+      });
+      Notiflix.Notify.info(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    }
+
     console.log(
       `Dla podanej frazy (${trimQ}) wyszukano ${total} dopasowań (dla bezpłatnego konta: ${totalHits}).`
     );
 
-    //   const dataSearch = response.data.hits;
-    //   console.log(dataSearch);
+    return response.data.hits;
   } catch (error) {
     console.error(error);
   }
 };
 
-fetchImg('blue dog');
+// funkcja tworząca galerię wyszukanych obrazów dla wpisanej frazy
+const drawGallery = hits => {
+  const galleryArray = hits.map(
+    ({ webformatURL, tags, likes, views, comments, downloads }) => {
+      const imgCard = document.createElement('div');
+      imgCard.classList.add('photo-card');
+      imgCard.innerHTML = `<img src="${webformatURL}" alt="${tags}" loading="lazy" /> <div class="info"> <p class="info-item"> <b>Likes: ${likes}</b> </p> <p class="info-item"> <b>Views: ${views}</b> </p> <p class="info-item"> <b>Comments: ${comments}</b> </p> <p class="info-item"> <b>Downloads: ${downloads}</b> </p> </div>`;
 
-// // funkcja z zapytaniem HTTP
-// const fetchImg = q => {
-//   const trimQ = q.trim();
-//   const API_KEY = '31998203-230b8715d00921ede83d56272';
-//   const API_URL = `https://pixabay.com/api/?key=${API_KEY}&q=${trimQ}&image_type=photo&orientation=horizontal&safesearch=true`;
+      return imgCard;
+    }
+  );
+  galerry.innerHTML = '';
+  galerry.append(...galleryArray);
+};
 
-//   if (trimQ.length === 0) {
-//     return;
-//   }
+// funkcja do obsługi pola tekstowego
+const inputHandler = ev => {
+  ev.preventDefault();
+  const searchingImg = inputSearch.value;
 
-//   return fetch(API_URL).then(res => {
-//     if (!res.ok) {
-//       throw new Error(res.status);
-//     }
-//     return res.json();
-//   });
-// };
+  fetchImg(searchingImg)
+    .then(hits => {
+      drawGallery(hits);
+    })
+    .catch(err => {
+      galerry.innerHTML = '';
+      console.error(err);
+    });
+};
+
+// obsługa zdarzenia po wpisaniu danych
+formSearch.addEventListener('submit', inputHandler);
