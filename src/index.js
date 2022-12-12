@@ -45,30 +45,43 @@ const fetchImg = async q => {
 
     const totalHits = response.data.totalHits;
     const total = response.data.total;
-    const totalPages = Math.ceil(totalHits / 40);
 
-    if (total === 0) {
-      Notiflix.Notify.init({
-        timeout: 5000,
-      });
-      Notiflix.Notify.info(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-    }
+    checkResult(totalHits);
 
     console.log(
       `Dla podanej frazy (${trimQ}) wyszukano ${total} dopasowań (dla bezpłatnego konta: ${totalHits}).`
     );
-
-    if (totalHits > 40) {
-      btnLoad.classList.remove('is-invisible');
-    }
 
     return response.data.hits;
   } catch (error) {
     console.error(error);
   }
 };
+
+// funkcja sprawdzająca ilość wyszukanych elementów oraz ilość stron
+function checkResult(totalHits) {
+  const totalPages = Math.ceil(totalHits / 40);
+
+  if (totalHits === 0) {
+    Notiflix.Notify.init({
+      timeout: 5000,
+    });
+    Notiflix.Notify.info(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+  } else if (page === 1) {
+    Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
+  }
+
+  if (page === totalPages && totalPages !== 1) {
+    btnLoad.classList.add('is-invisible');
+    Notiflix.Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
+  } else if (page < totalPages) {
+    btnLoad.classList.remove('is-invisible');
+  }
+}
 
 // funkcja tworząca galerię wyszukanych obrazów dla wpisanej frazy
 const drawGallery = hits => {
@@ -77,14 +90,14 @@ const drawGallery = hits => {
     ({ webformatURL, tags, likes, views, comments, downloads }) => {
       const imgCard = document.createElement('div');
       imgCard.classList.add('photo-card');
-      imgCard.innerHTML = `<img src="${webformatURL}" alt="${tags}" loading="lazy" /> <div class="info"> <p class="info-item"> <b>Likes: ${likes}</b> </p> <p class="info-item"> <b>Views: ${views}</b> </p> <p class="info-item"> <b>Comments: ${comments}</b> </p> <p class="info-item"> <b>Downloads: ${downloads}</b> </p> </div>`;
+      imgCard.innerHTML = `<a href="${webformatURL}"> <img src="${webformatURL}" alt="${tags}" loading="lazy" /> </a> <div class="info"> <p class="info-item"> <b>Likes: ${likes}</b> </p> <p class="info-item"> <b>Views: ${views}</b> </p> <p class="info-item"> <b>Comments: ${comments}</b> </p> <p class="info-item"> <b>Downloads: ${downloads}</b> </p> </div>`;
 
       return imgCard;
     }
   );
   galerry.innerHTML = '';
   galerry.append(...galleryArray);
-  // btnLoad.classList.remove('is-invisible');
+  let lightbox = new SimpleLightbox('.gallery a');
 };
 
 // funkcja do obsługi pola tekstowego
@@ -112,11 +125,6 @@ const loadMore = () => {
     .then(hits => {
       drawGallery(hits);
       console.log(`Wczytana strona: ${page}`);
-
-      // if (page > totalHits) {
-
-      // }
-
       page += 1;
     })
     .catch(err => {
