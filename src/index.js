@@ -6,7 +6,7 @@ import axios from 'axios';
 import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-// import throttle from 'lodash.throttle';
+import throttle from 'lodash.throttle';
 
 const formSearch = document.querySelector('#search-form');
 const inputSearch = document.querySelector('input[name="searchQuery"]');
@@ -16,6 +16,9 @@ const gallery = document.querySelector('.gallery');
 
 let page = 1;
 let limit = 40;
+let scrollPosition = 0;
+let buttonPosition = 0;
+
 btnLoad.classList.add('is-invisible');
 btnSearch.disabled = true;
 
@@ -106,15 +109,6 @@ const drawGallery = hits => {
   );
   gallery.append(...galleryArray);
   let lightbox = new SimpleLightbox('.gallery a');
-
-  const { height: cardHeight } = document
-    .querySelector('.gallery')
-    .firstElementChild.getBoundingClientRect();
-
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: 'smooth',
-  });
 };
 
 // funkcja do obsługi pola tekstowego
@@ -142,6 +136,14 @@ const loadMore = () => {
   fetchImg(searchingImg)
     .then(hits => {
       drawGallery(hits);
+      const { height: cardHeight } = document
+        .querySelector('.gallery')
+        .firstElementChild.getBoundingClientRect();
+
+      window.scrollBy({
+        top: cardHeight * 2,
+        behavior: 'smooth',
+      });
       console.log(`Wczytana strona: ${page}`);
       page += 1;
     })
@@ -162,6 +164,16 @@ inputSearch.addEventListener('input', () => {
 
 // obsługa zdarzenia po wpisaniu danych
 formSearch.addEventListener('submit', inputHandler);
+
+window.onscroll = throttle(function () {
+  // console.log('pozycja scrolla', scrollPosition);
+  // console.log('pozycja BUTTONA', buttonPosition);
+  scrollPosition = window.pageYOffset;
+  buttonPosition = btnLoad.offsetTop;
+  if (scrollPosition > buttonPosition - 850) {
+    loadMore();
+  }
+}, 1000);
 
 // obługa zdarzenia load more
 btnLoad.addEventListener('click', loadMore);
