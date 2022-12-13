@@ -6,12 +6,13 @@ import axios from 'axios';
 import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+// import throttle from 'lodash.throttle';
 
 const formSearch = document.querySelector('#search-form');
 const inputSearch = document.querySelector('input[name="searchQuery"]');
 const btnSearch = document.querySelector('button');
 const btnLoad = document.querySelector('.load-more');
-const galerry = document.querySelector('.gallery');
+const gallery = document.querySelector('.gallery');
 
 let page = 1;
 let limit = 40;
@@ -87,17 +88,33 @@ function checkResult(totalHits) {
 const drawGallery = hits => {
   console.log(hits);
   const galleryArray = hits.map(
-    ({ webformatURL, tags, likes, views, comments, downloads }) => {
+    ({
+      webformatURL,
+      largeImageURL,
+      tags,
+      likes,
+      views,
+      comments,
+      downloads,
+    }) => {
       const imgCard = document.createElement('div');
       imgCard.classList.add('photo-card');
-      imgCard.innerHTML = `<a href="${webformatURL}"> <img src="${webformatURL}" alt="${tags}" loading="lazy" /> </a> <div class="info"> <p class="info-item"> <b>Likes: ${likes}</b> </p> <p class="info-item"> <b>Views: ${views}</b> </p> <p class="info-item"> <b>Comments: ${comments}</b> </p> <p class="info-item"> <b>Downloads: ${downloads}</b> </p> </div>`;
+      imgCard.innerHTML = `<a href="${largeImageURL}"> <img src="${webformatURL}" alt="${tags}" loading="lazy" /> </a> <div class="info"> <p class="info-item"> <b>Likes:<br> ${likes}</b> </p> <p class="info-item"> <b>Views:<br> ${views}</b> </p> <p class="info-item"> <b>Comments:<br> ${comments}</b> </p> <p class="info-item"> <b>Downloads:<br> ${downloads}</b> </p> </div>`;
 
       return imgCard;
     }
   );
-  galerry.innerHTML = '';
-  galerry.append(...galleryArray);
+  gallery.append(...galleryArray);
   let lightbox = new SimpleLightbox('.gallery a');
+
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
 };
 
 // funkcja do obsługi pola tekstowego
@@ -108,12 +125,13 @@ const inputHandler = ev => {
 
   fetchImg(searchingImg)
     .then(hits => {
+      gallery.innerHTML = '';
       drawGallery(hits);
       console.log(`Wczytana strona: ${page}`);
       page += 1;
     })
     .catch(err => {
-      galerry.innerHTML = '';
+      gallery.innerHTML = '';
       console.error(err);
     });
 };
@@ -128,7 +146,7 @@ const loadMore = () => {
       page += 1;
     })
     .catch(err => {
-      galerry.innerHTML = '';
+      gallery.innerHTML = '';
       console.error(err);
     });
 };
