@@ -1,6 +1,7 @@
 body {
   padding-left: 2vw;
   padding-top: 2vh;
+  padding-bottom: 2vh;
 }
 
 form {
@@ -48,6 +49,7 @@ input {
   justify-content: flex-end;
   width: calc(100vw / 6);
   min-width: 15rem;
+  max-width: 25rem;
   font-size: 0px;
   flex-grow: 1;
   overflow: hidden;

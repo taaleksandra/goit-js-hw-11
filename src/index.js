@@ -165,12 +165,13 @@ inputSearch.addEventListener('input', () => {
 // obsługa zdarzenia po wpisaniu danych
 formSearch.addEventListener('submit', inputHandler);
 
+// infinite scroll
 window.onscroll = throttle(function () {
   // console.log('pozycja scrolla', scrollPosition);
   // console.log('pozycja BUTTONA', buttonPosition);
   scrollPosition = window.pageYOffset;
   buttonPosition = btnLoad.offsetTop;
-  if (scrollPosition > buttonPosition - 850) {
+  if (scrollPosition > buttonPosition - 1000) {
     loadMore();
   }
 }, 1000);
